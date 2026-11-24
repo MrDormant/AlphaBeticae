@@ -1,0 +1,7 @@
+pack/node_modules/
+pack/dist*/
+pack/**/*.exe
+pack/**/*.zip
+*.zip
+node_modules/
+dist/

@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: alfabetica
+      POSTGRES_USER: alfabetica
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-alfabetica}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alfabetica -d alfabetica"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://alfabetica:${POSTGRES_PASSWORD:-alfabetica}@db:5432/alfabetica
+      JWT_SECRET: ${JWT_SECRET:?Задайте JWT_SECRET в файле .env}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+
+volumes:
+  db-data:

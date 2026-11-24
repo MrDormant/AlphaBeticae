@@ -1,0 +1,276 @@
+СПИСОК ДЛЯ ОЗВУЧКИ · AlphaBetice EN→RU Starter
+Источник: frontend/js/data.js · уроки 1–5
+
+Формат: [СТАТУС] ЯЗЫК | тип | текст | примечание
+========================================================================
+
+--- alphabet ---
+[TODO] EN | name | A | eɪ
+[TODO] EN | name | B | biː
+[TODO] EN | name | C | siː
+[TODO] EN | name | D | diː
+[TODO] EN | name | E | iː
+[TODO] EN | name | F | ef
+[TODO] EN | name | G | dʒiː
+[TODO] EN | name | H | eɪtʃ
+[TODO] EN | name | I | aɪ
+[TODO] EN | name | J | dʒeɪ
+[TODO] EN | name | K | keɪ
+[TODO] EN | name | L | el
+[TODO] EN | name | M | em
+[TODO] EN | name | N | en
+[TODO] EN | name | O | əʊ
+[TODO] EN | name | P | piː
+[TODO] EN | name | Q | kjuː
+[TODO] EN | name | R | ɑː
+[TODO] EN | name | S | es
+[TODO] EN | name | T | tiː
+[TODO] EN | name | U | juː
+[TODO] EN | name | V | viː
+[TODO] EN | name | W | dʌbl juː
+[TODO] EN | name | X | eks
+[TODO] EN | name | Y | waɪ
+[TODO] EN | name | Z | zed
+
+--- GLOBAL ---
+[DONE] FILE | chant | vowel-chant.wav | 6 vowels A O E Y I U
+
+--- L1 ---
+[TODO] EN | story | We are crucial letters! We live everywhere in different alphabets around the world! We can connect languages as friends! Look at the map and you will see! | Aa says
+[TODO] EN | story | What are you talking about? | Oo asks
+[TODO] EN | story | No WHAT but WHY! Look at the map! | Aa says
+[TODO] EN | story | WOW! I see! A lot of alphabets look the same! In the UK, the USA, Germany, Italy, Brazil. | Oo cries
+[TODO] EN | story | The basic of these alphabets is Latin letters. But the Russian alphabet is Cyrillic — it lives in Russia, Belarus, Bulgaria, Ukraine, Macedonia and Mongolia. | Aa says
+[TODO] EN | story | And we — Oo and Aa — live everywhere! | Oo says
+[TODO] EN | story | Yes! Let's make a letter team and help people who read Latin letters learn Cyrillic and read in Russian! | Aa says
+[TODO] EN | letter-sound | a: | A / А
+[TODO] RU | syllable-speak | А | A
+[TODO] EN | letter-sound | o | O / О
+[TODO] RU | syllable-speak | О | O
+[TODO] EN | letter-sound | e | E / Э
+[TODO] RU | syllable-speak | Э | E
+[TODO] EN | letter-sound | ɪ: | Y / Ы
+[TODO] RU | syllable-speak | Ы | Y
+[TODO] EN | letter-sound | ɪ | I / И
+[TODO] RU | syllable-speak | И | I
+[TODO] EN | letter-sound | u | U / У
+[TODO] RU | syllable-speak | У | U
+[TODO] EN | album | Same sound [a:] — park · парк | Aa Аа
+[TODO] EN | album | Same sound [o] — sport · спорт | Oo Оо
+[TODO] EN | album | Sound [e] — echo · эхо | Ee Ээ
+[TODO] EN | album | New sound [ɪ:] — cheese · сыр | Yy Ыы
+[TODO] EN | album | Sound [ɪ] — ficus · фикус | Ii Ии
+[TODO] EN | album | Sound [u] — cuckoo · кукушка | Uu Уу
+[TODO] EN | example | park | парк
+[TODO] RU | example | парк | park
+[TODO] EN | example | sport | спорт
+[TODO] RU | example | спорт | sport
+[TODO] EN | example | echo | эхо
+[TODO] RU | example | эхо | echo
+[TODO] EN | example | cheese | сыр
+[TODO] RU | example | сыр | cheese
+[TODO] EN | example | ficus | фикус
+[TODO] RU | example | фикус | ficus
+[TODO] EN | example | cuckoo | кукушка
+[TODO] RU | example | кукушка | cuckoo
+
+--- L2 ---
+[TODO] EN | letter-hint | English Nn [n] sounds like Russian Н [н] | lesson 2
+[TODO] RU | syllable-speak | Н | N
+[TODO] RU | syllable | НА | NA
+[TODO] EN | syllable | NA | quiz opposite
+[TODO] RU | syllable | НО | NO
+[TODO] EN | syllable | NO | quiz opposite
+[TODO] RU | syllable | НЭ | NE
+[TODO] EN | syllable | NE | quiz opposite
+[TODO] RU | syllable | НЫ | NY
+[TODO] EN | syllable | NY | quiz opposite
+[TODO] RU | syllable | НИ | NI
+[TODO] EN | syllable | NI | quiz opposite
+[TODO] RU | syllable | НУ | NU
+[TODO] EN | syllable | NU | quiz opposite
+[TODO] EN | word | Anna | Anna
+[TODO] RU | word | АННА | Anna
+[TODO] EN | word | Nina | Nina
+[TODO] RU | word | НИНА | Nina
+[TODO] EN | word | Inna | Inna
+[TODO] RU | word | ИННА | Inna
+[TODO] EN | word | Nonna | Nonna
+[TODO] RU | word | НОННА | Nonna
+[TODO] EN | word | HE | he
+[TODO] RU | word | ОН | HE
+[TODO] EN | word | SHE | she
+[TODO] RU | word | ОНА | SHE
+[TODO] EN | word | IT | it
+[TODO] RU | word | ОНО | IT
+[TODO] EN | word | THEY | they
+[TODO] RU | word | ОНИ | THEY
+[TODO] EN | word | on | on (on the)
+[TODO] RU | word | НА | on
+[TODO] EN | word | no | but
+[TODO] RU | word | НО | no
+[TODO] EN | reading-tap | Anna | lesson text
+[TODO] EN | reading-tap | He | lesson text
+[TODO] EN | reading-tap | Inna | lesson text
+[TODO] EN | reading-tap | Nina | lesson text
+[TODO] EN | reading-tap | Nonna | lesson text
+[TODO] EN | reading-tap | She | lesson text
+[TODO] EN | reading-tap | a | lesson text
+[TODO] EN | reading-tap | and | lesson text
+[TODO] EN | reading-tap | banana | lesson text
+[TODO] EN | reading-tap | is | lesson text
+[TODO] EN | reading-tap | take | lesson text
+[TODO] RU | reading-tap | Анна | lesson text
+[TODO] RU | reading-tap | Инна | lesson text
+[TODO] RU | reading-tap | На | lesson text
+[TODO] RU | reading-tap | Нина | lesson text
+[TODO] RU | reading-tap | Нонна | lesson text
+[TODO] RU | reading-tap | Он | lesson text
+[TODO] RU | reading-tap | Она | lesson text
+
+--- L3 ---
+[TODO] EN | letter-hint | English Tt [t] sounds like Russian Т [т] | lesson 3
+[TODO] RU | syllable-speak | Т | T
+[TODO] RU | syllable | ТА | TA
+[TODO] EN | syllable | TA | quiz opposite
+[TODO] RU | syllable | ТО | TO
+[TODO] EN | syllable | TO | quiz opposite
+[TODO] RU | syllable | ТЭ | TE
+[TODO] EN | syllable | TE | quiz opposite
+[TODO] RU | syllable | ТЫ | TY
+[TODO] EN | syllable | TY | quiz opposite
+[TODO] RU | syllable | ТИ | TI
+[TODO] EN | syllable | TI | quiz opposite
+[TODO] RU | syllable | ТУ | TU
+[TODO] EN | syllable | TU | quiz opposite
+[TODO] EN | word | Nata | Nata
+[TODO] RU | word | НАТА | Nata
+[TODO] EN | word | Anton | Anton
+[TODO] RU | word | АНТОН | Anton
+[TODO] EN | word | here | here (is/are)
+[TODO] RU | word | ТУТ | here
+[TODO] EN | word | you | you
+[TODO] RU | word | ТЫ | you
+[TODO] EN | reading-tap | Anna | lesson text
+[TODO] EN | reading-tap | Anton | lesson text
+[TODO] EN | reading-tap | He | lesson text
+[TODO] EN | reading-tap | Here | lesson text
+[TODO] EN | reading-tap | Inna | lesson text
+[TODO] EN | reading-tap | Nata | lesson text
+[TODO] EN | reading-tap | She | lesson text
+[TODO] EN | reading-tap | They | lesson text
+[TODO] EN | reading-tap | You | lesson text
+[TODO] EN | reading-tap | are | lesson text
+[TODO] EN | reading-tap | is | lesson text
+[TODO] RU | reading-tap | Анна | lesson text
+[TODO] RU | reading-tap | Антон | lesson text
+[TODO] RU | reading-tap | Инна | lesson text
+[TODO] RU | reading-tap | Ната | lesson text
+[TODO] RU | reading-tap | Он | lesson text
+[TODO] RU | reading-tap | Она | lesson text
+[TODO] RU | reading-tap | Они | lesson text
+[TODO] RU | reading-tap | Тут | lesson text
+[TODO] RU | reading-tap | Ты | lesson text
+
+--- L4 ---
+[TODO] EN | letter-hint | English Kk [k] sounds like Russian К [к] | lesson 4
+[TODO] RU | syllable-speak | К | K
+[TODO] RU | syllable | КА | KA
+[TODO] EN | syllable | KA | quiz opposite
+[TODO] RU | syllable | КО | KO
+[TODO] EN | syllable | KO | quiz opposite
+[TODO] RU | syllable | КЭ | KE
+[TODO] EN | syllable | KE | quiz opposite
+[TODO] RU | syllable | КЫ | KY
+[TODO] EN | syllable | KY | quiz opposite
+[TODO] RU | syllable | КИ | KI
+[TODO] EN | syllable | KI | quiz opposite
+[TODO] RU | syllable | КУ | KU
+[TODO] EN | syllable | KU | quiz opposite
+[TODO] EN | word | who | who?
+[TODO] RU | word | КТО | who
+[TODO] EN | word | how | how?
+[TODO] RU | word | КАК | how
+[TODO] EN | word | cat | cat
+[TODO] RU | word | КОТ | cat
+[TODO] EN | word | cats | cats
+[TODO] RU | word | КОТЫ | cats
+[TODO] EN | word | duck | duck
+[TODO] RU | word | УТКА | duck
+[TODO] EN | word | ducks | ducks
+[TODO] RU | word | УТКИ | ducks
+[TODO] EN | word | horses | horses
+[TODO] RU | word | КОНИ | horses
+[TODO] EN | word | Nikita | Nikita
+[TODO] RU | word | НИКИТА | Nikita
+[TODO] EN | word | Nika | Nika
+[TODO] RU | word | НИКА | Nika
+[TODO] EN | reading-tap | Anna | lesson text
+[TODO] EN | reading-tap | How | lesson text
+[TODO] EN | reading-tap | Nikita | lesson text
+[TODO] EN | reading-tap | Okay | lesson text
+[TODO] EN | reading-tap | Who | lesson text
+[TODO] EN | reading-tap | a | lesson text
+[TODO] EN | reading-tap | and | lesson text
+[TODO] EN | reading-tap | are | lesson text
+[TODO] EN | reading-tap | cat | lesson text
+[TODO] EN | reading-tap | ducks | lesson text
+[TODO] EN | reading-tap | has | lesson text
+[TODO] EN | reading-tap | here | lesson text
+[TODO] EN | reading-tap | horses | lesson text
+[TODO] EN | reading-tap | the | lesson text
+[TODO] EN | reading-tap | you | lesson text
+[TODO] RU | reading-tap | Анны | lesson text
+[TODO] RU | reading-tap | Как | lesson text
+[TODO] RU | reading-tap | Ника | lesson text
+[TODO] RU | reading-tap | Никита | lesson text
+[TODO] RU | reading-tap | Никиты | lesson text
+[TODO] RU | reading-tap | Ок | lesson text
+[TODO] RU | reading-tap | Тут | lesson text
+[TODO] RU | reading-tap | Ты | lesson text
+[TODO] RU | reading-tap | кони | lesson text
+[TODO] RU | reading-tap | кот | lesson text
+[TODO] RU | reading-tap | кто | lesson text
+[TODO] RU | reading-tap | утки | lesson text
+[TODO] RU | caption | На, кота! Тут он, тут и кот. | image
+
+--- L5 ---
+[TODO] EN | letter-hint | English Ss [s] sounds like Russian С [с] | lesson 5
+[TODO] RU | syllable-speak | С | S
+[TODO] RU | syllable | СА | SA
+[TODO] EN | syllable | SA | quiz opposite
+[TODO] RU | syllable | СО | SO
+[TODO] EN | syllable | SO | quiz opposite
+[TODO] RU | syllable | СЭ | SE
+[TODO] EN | syllable | SE | quiz opposite
+[TODO] RU | syllable | СЫ | SY
+[TODO] EN | syllable | SY | quiz opposite
+[TODO] RU | syllable | СИ | SI
+[TODO] EN | syllable | SI | quiz opposite
+[TODO] RU | syllable | СУ | SU
+[TODO] EN | syllable | SU | quiz opposite
+[TODO] EN | word | SA | syllable sa
+[TODO] RU | word | СА | SA
+[TODO] EN | word | SO | syllable so
+[TODO] RU | word | СО | SO
+[TODO] EN | reading-tap | Learn | lesson text
+[TODO] EN | reading-tap | The | lesson text
+[TODO] EN | reading-tap | add | lesson text
+[TODO] EN | reading-tap | book | lesson text
+[TODO] EN | reading-tap | more | lesson text
+[TODO] EN | reading-tap | next | lesson text
+[TODO] EN | reading-tap | of | lesson text
+[TODO] EN | reading-tap | pages | lesson text
+[TODO] EN | reading-tap | syllable | lesson text
+[TODO] EN | reading-tap | table | lesson text
+[TODO] EN | reading-tap | will | lesson text
+[TODO] EN | reading-tap | with | lesson text
+[TODO] EN | reading-tap | words | lesson text
+[TODO] RU | reading-tap | СА | lesson text
+[TODO] RU | reading-tap | СИ | lesson text
+[TODO] RU | reading-tap | СО | lesson text
+[TODO] RU | reading-tap | СУ | lesson text
+[TODO] RU | reading-tap | СЫ | lesson text
+[TODO] RU | reading-tap | СЭ | lesson text
+
+TODO: 260, DONE: 1

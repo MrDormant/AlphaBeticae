@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+*.db
+.env
+frontend/node_modules/
+frontend/audio/

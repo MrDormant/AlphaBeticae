@@ -1,0 +1,55 @@
+{
+  "name": "alfabetica-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8",
+    "rcedit": "^5.0.2"
+  },
+  "build": {
+    "appId": "ru.alfabetica.desktop",
+    "productName": "Алфабэтика",
+    "directories": {
+      "output": "dist-now",
+      "buildResources": "."
+    },
+    "icon": "icon.ico",
+    "files": [
+      "main.js",
+      "icon.ico",
+      {
+        "from": "../dist",
+        "to": "app",
+        "filter": ["**/*"]
+      }
+    ],
+    "asar": true,
+    "nsis": {
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico"
+    },
+    "portable": {
+      "artifactName": "Alfabetica.${ext}"
+    },
+    "win": {
+      "icon": "icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Alfabetica.${ext}"
+    }
+  }
+}
