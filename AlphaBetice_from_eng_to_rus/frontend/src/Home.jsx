@@ -17,27 +17,79 @@ function Colored({ text }) {
   );
 }
 
-function Fox() {
-  const ref = useRef(null);
+function HeroLisa() {
+  const wrapRef = useRef(null);
+  const videoRef = useRef(null);
+  const bubbleRef = useRef(null);
+  const voiceRef = useRef(null);
+  const lastRef = useRef(-1);
+
   useEffect(() => {
-    const video = ref.current;
+    const video = videoRef.current;
     if (!video) return;
     video.muted = true;
+    video.defaultMuted = true;
     video.loop = true;
     video.playsInline = true;
     video.play().catch(() => {});
   }, []);
+
+  const prompt = 'Tap 🔊';
+  const lines = [
+    { text: 'Молодец!', audio: 'assets/audio/fox/good.m4a' },
+    { text: 'What is right, what is wrong?', audio: 'assets/audio/fox/idle.m4a' },
+    { text: 'Ох, ошибка!', audio: 'assets/audio/fox/wrong.m4a' },
+  ];
+
+  const speak = () => {
+    const bubble = bubbleRef.current;
+    const wrap = wrapRef.current;
+    if (!bubble || !wrap) return;
+    if (!voiceRef.current) {
+      voiceRef.current = new Audio();
+      voiceRef.current.preload = 'auto';
+    }
+    const voice = voiceRef.current;
+    let i;
+    do { i = Math.floor(Math.random() * lines.length); } while (i === lastRef.current && lines.length > 1);
+    lastRef.current = i;
+    const line = lines[i];
+    bubble.textContent = line.text;
+    bubble.classList.remove('hint');
+    const showPrompt = () => {
+      bubble.textContent = prompt;
+      bubble.classList.add('hint');
+    };
+    voice.onended = showPrompt;
+    voice.onerror = showPrompt;
+    voice.pause();
+    try { voice.currentTime = 0; } catch (e) { /* ignore */ }
+    if (typeof Store === 'undefined' || Store.data.sound) {
+      voice.src = line.audio;
+      voice.play().catch(showPrompt);
+    } else {
+      setTimeout(showPrompt, 2200);
+    }
+  };
+
   return (
-    <video
-      ref={ref}
-      className="hero-img"
-      src={'video/' + encodeURIComponent('лис главная страница.mp4')}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-    />
+    <div
+      ref={wrapRef}
+      className="hero-lisa"
+      title="Tap the cloud — Lisa will say a phrase"
+      onClick={speak}
+    >
+      <div ref={bubbleRef} className="hero-lisa-bubble show hint" role="status">{prompt}</div>
+      <video
+        ref={videoRef}
+        className="hero-img hero-anim"
+        src="assets/video/lisa-hero.mp4?v=2"
+        autoPlay
+        muted
+        loop
+        playsInline
+      />
+    </div>
   );
 }
 
@@ -73,7 +125,7 @@ export default function Home() {
             <div className="all-done">🏆 Starter complete!</div>
           )}
         </div>
-        <Fox />
+        <HeroLisa />
       </section>
 
       <div ref={teaserRef} />
@@ -103,7 +155,7 @@ export default function Home() {
         <a className="game-card" href="#/profile">
           <span className="gc-icon">🏅</span>
           <b>Profile</b>
-          <span>Stars and progress</span>
+          <span>Stars, lessons, motivation</span>
         </a>
       </section>
 

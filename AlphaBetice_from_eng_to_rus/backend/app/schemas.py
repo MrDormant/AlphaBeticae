@@ -75,3 +75,17 @@ class ProgressOut(BaseModel):
     @classmethod
     def _utc(cls, v: datetime | None) -> datetime | None:
         return as_utc(v)
+
+
+class StatsOut(BaseModel):
+    lessons_done: int
+    lessons_total: int
+    stars: int
+    motivation_score: int
+    motivation_label: str
+    reaction_ms: int | None = None
+    reaction_label: str
+    answer_ms: int | None = None
+    speed_label: str
+    sessions: int
+    accuracy: float | None = None

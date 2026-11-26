@@ -59,28 +59,6 @@ function header() {
 
 // ---------- Вход и регистрация ----------
 
-const REGISTRATION_COMING_SOON = true;
-
-function showRegisterSoonDialog() {
-  const overlay = h('div', { class: 'auth-soon-overlay' });
-  const close = () => {
-    overlay.classList.remove('show');
-    setTimeout(() => overlay.remove(), 200);
-  };
-  overlay.onclick = (e) => { if (e.target === overlay) close(); };
-  overlay.append(h('div', {
-    class: 'auth-soon-box',
-    onclick: (e) => e.stopPropagation(),
-    role: 'dialog',
-    'aria-labelledby': 'auth-soon-title',
-  },
-  h('h2', { id: 'auth-soon-title' }, 'Регистрация'),
-  h('p', null, 'Будет добавлена позже. Пока можно заниматься без аккаунта или войти, если профиль уже есть.'),
-  h('button', { type: 'button', class: 'btn primary big', onclick: close }, 'Понятно')));
-  document.body.append(overlay);
-  requestAnimationFrame(() => overlay.classList.add('show'));
-}
-
 function renderAuth() {
   if (Auth.user) {
     go('#/');
@@ -95,22 +73,16 @@ function renderAuth() {
   const tabs = h('div', { class: 'auth-tabs' });
 
   const setMode = (m) => {
-    if (REGISTRATION_COMING_SOON && m === 'register') {
-      showRegisterSoonDialog();
-      return;
-    }
-    mode = 'login';
+    mode = m;
     error.textContent = '';
-    submit.textContent = 'Войти ▶';
-    password.setAttribute('autocomplete', 'current-password');
-    hint.textContent = 'Необязательно: войди, чтобы звёзды сохранялись в твоём профиле на любом устройстве.';
+    submit.textContent = m === 'login' ? 'Войти ▶' : 'Зарегистрироваться ▶';
+    password.setAttribute('autocomplete', m === 'login' ? 'current-password' : 'new-password');
+    hint.textContent = m === 'login'
+      ? 'Необязательно: войди, чтобы звёзды и кабинет сохранялись на любом устройстве.'
+      : 'Придумай логин (от 3 символов) и пароль (от 4 символов). Прогресс с этого устройства попадёт в профиль.';
     tabs.replaceChildren(
-      h('button', { type: 'button', class: 'active', onclick: () => setMode('login') }, 'Вход'),
-      h('button', {
-        type: 'button',
-        class: '',
-        onclick: () => (REGISTRATION_COMING_SOON ? showRegisterSoonDialog() : setMode('register')),
-      }, 'Регистрация'));
+      h('button', { type: 'button', class: mode === 'login' ? 'active' : '', onclick: () => setMode('login') }, 'Вход'),
+      h('button', { type: 'button', class: mode === 'register' ? 'active' : '', onclick: () => setMode('register') }, 'Регистрация'));
   };
 
   const form = h('form', {
@@ -138,8 +110,8 @@ function renderAuth() {
   host().replaceChildren(h('div', { class: 'auth' },
     h('img', { class: 'auth-img', src: img('hero'), alt: '' }),
     h('div', { class: 'auth-card' },
-      h('h1', null, 'Вход'),
-      h('p', { class: 'auth-lead' }, 'Уроки можно проходить без аккаунта. Вход — если профиль уже создан; новую регистрацию скоро добавим.'),
+      h('h1', null, 'Вход и регистрация'),
+      h('p', { class: 'auth-lead' }, 'Уроки можно проходить без аккаунта. Регистрация нужна, чтобы сохранить прогресс и кабинет.'),
       form,
       h('a', { class: 'link-btn', href: '#/' }, '← К урокам без регистрации'))));
   login.focus();
@@ -276,7 +248,7 @@ function renderHome() {
     h('section', { class: 'games' },
       h('a', { class: 'game-card', href: '#/cubes' }, h('span', { class: 'gc-icon' }, '🎲'), h('b', null, 'Кубики со слогами'), h('span', null, 'Крути кубики и собирай слова')),
       h('a', { class: 'game-card', href: '#/alphabet' }, h('span', { class: 'gc-icon' }, '🔤'), h('b', null, 'Английский алфавит'), h('span', null, 'Все 26 букв и их названия')),
-      h('a', { class: 'game-card', href: '#/profile' }, h('span', { class: 'gc-icon' }, '🏅'), h('b', null, 'Личный кабинет'), h('span', null, 'Мои звёзды и пройденные уроки'))),
+      h('a', { class: 'game-card', href: '#/profile' }, h('span', { class: 'gc-icon' }, '🏅'), h('b', null, 'Личный кабинет'), h('span', null, 'Звёзды, уроки, мотивация и реакция'))),
     ...sections.map((s) => h('section', { class: 'map-section' },
       h('h2', null, s.title),
       h('div', { class: 'lesson-list' }, s.items.map(card)))),
@@ -370,13 +342,14 @@ function renderProfile() {
           Auth.user && Auth.user.created_at ? `В Алфабэтике с ${formatDate(Auth.user.created_at)}` : 'Занимаешься без регистрации',
           lastDate ? ` · последний урок ${formatDate(lastDate)}` : ''))),
     !Auth.user ? h('div', { class: 'guest-note' },
-      'Прогресс на этом устройстве. Чтобы не потерять звёзды, создай профиль.',
-      h('a', { class: 'btn primary small', href: '#/auth' }, 'Войти')) : null,
+      'Это локальный кабинет: звёзды и метрики уже пишутся на этом компьютере. Регистрация нужна, чтобы открыть их с другого устройства.',
+      h('a', { class: 'btn primary small', href: '#/auth' }, 'Регистрация')) : null,
     h('div', { class: 'stats' },
       stat('⭐', `${stars} / ${maxStars}`, 'звёзд собрано'),
       stat('📚', `${passed.length} / ${COURSE.length}`, 'уроков пройдено'),
       stat('🔤', learned.length, 'букв в команде'),
       stat('🎲', Store.data.cubeScore || 0, 'ответов в кубиках')),
+    cabinetBlock(summarizeLearning(Store.data)),
     h('div', { class: 'total-progress' },
       h('div', { class: 'tp-label' }, `Пройдено ${percent}% Алфабэтики`),
       h('div', { class: 'progress-bar big' }, h('div', { class: 'progress-fill', style: { width: percent + '%' } }))),
@@ -390,12 +363,26 @@ function renderProfile() {
 
 // ---------- Шаги уроков ----------
 
+const POEM_STEP_TITLE = 'Стихотворение Лисы Лисичкиной';
+
+function poemStep(poem, opts) {
+  if (!poem || typeof Ex.poem !== 'function') return null;
+  return { title: POEM_STEP_TITLE, render: (ctx) => Ex.poem(poem, ctx, opts) };
+}
+
 function insertPoem(lesson, steps) {
-  const poem = window.POEMS && window.POEMS[lesson.id];
-  if (!poem || typeof Ex.poem !== 'function') return steps;
-  const step = { title: poem.title || 'Стих', render: (ctx) => Ex.poem(poem, ctx) };
-  steps.push(step);
-  return steps;
+  const out = [];
+  const hello = poemStep(window.POEMS && window.POEMS[1]);
+  if (hello) out.push(hello);
+  out.push(...steps);
+  if (lesson.id !== 1) {
+    const own = poemStep(window.POEMS && window.POEMS[lesson.id]);
+    if (own) out.push(own);
+  }
+  const ruPoem = window.POEMS_RU && (window.POEMS_RU[lesson.id] || window.POEMS_RU[1]);
+  const ru = poemStep(ruPoem, { closing: true });
+  if (ru) out.push(ru);
+  return out;
 }
 
 function lessonSteps(lesson) {
@@ -493,6 +480,164 @@ function finalSteps(fin) {
   ];
 }
 
+// ---------- Скрытые метрики урока ----------
+
+function avgNums(values) {
+  const nums = values.filter((v) => typeof v === 'number' && v >= 0);
+  if (!nums.length) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function motivationLabel(score) {
+  if (score >= 80) return 'Горит желанием учиться';
+  if (score >= 55) return 'Занимается с интересом';
+  if (score >= 30) return 'Потихоньку входит во вкус';
+  return 'Нужна поддержка и похвала';
+}
+
+function reactionLabel(ms) {
+  if (ms == null) return 'Пока мало данных';
+  if (ms < 1200) return 'Молниеносная';
+  if (ms < 3000) return 'Живая';
+  if (ms < 6000) return 'Спокойная';
+  return 'Вдумчивая';
+}
+
+function speedLabel(ms) {
+  if (ms == null) return 'Пока мало данных';
+  if (ms < 2500) return 'Отвечает очень быстро';
+  if (ms < 6000) return 'В своём уверенном темпе';
+  return 'Не спешит, думает';
+}
+
+function formatMs(ms) {
+  if (ms == null) return '';
+  const sec = ms / 1000;
+  return sec < 10 ? `${sec.toFixed(1)} с` : `${Math.round(sec)} с`;
+}
+
+function summarizeLearning(data) {
+  const total = COURSE.length;
+  const done = (data && data.done) || {};
+  const lessonsDone = Object.values(done).filter(Boolean).length;
+  const sessions = ((data && data.metrics && data.metrics.sessions) || []);
+  const finished = sessions.filter((s) => s.completed);
+  const abandoned = sessions.filter((s) => !s.completed);
+  const reactions = sessions.map((s) => s.avgReactionMs).filter(Boolean);
+  const answers = sessions.map((s) => s.avgAnswerMs).filter(Boolean);
+  const corrects = sessions.reduce((a, s) => a + (s.corrects || 0), 0);
+  const mistakes = sessions.reduce((a, s) => a + (s.mistakes || 0), 0);
+  const attempts = corrects + mistakes;
+  const accuracy = attempts ? corrects / attempts : null;
+
+  let score = 35;
+  if (total) score += 30 * (lessonsDone / total);
+  if (accuracy != null) score += 20 * accuracy;
+  if (finished.length) score += 10;
+  if (abandoned.length && abandoned.length > finished.length) score -= 12;
+  const avgDur = avgNums(finished.map((s) => s.durationMs || 0));
+  if (finished.length && avgDur && avgDur > 90000) score += 8;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const reactionMs = avgNums(reactions);
+  const answerMs = avgNums(answers);
+  return {
+    lessonsDone,
+    lessonsTotal: total,
+    motivationScore: score,
+    motivationLabel: motivationLabel(score),
+    reactionMs: reactionMs == null ? null : Math.round(reactionMs),
+    reactionLabel: reactionLabel(reactionMs),
+    answerMs: answerMs == null ? null : Math.round(answerMs),
+    speedLabel: speedLabel(answerMs),
+    sessions: sessions.length,
+  };
+}
+
+function cabinetBlock(info) {
+  const local = !Auth.user;
+  const card = (icon, title, value, hint) => h('div', { class: 'cabinet-card' },
+    h('div', { class: 'cabinet-k' }, icon, ' ', title),
+    h('div', { class: 'cabinet-v' }, value),
+    hint ? h('div', { class: 'cabinet-h' }, hint) : null);
+
+  return h('div', { class: 'cabinet' },
+    h('h2', { class: 'step-title' }, 'Как ты учишься'),
+    h('p', { class: 'cabinet-lead' }, local
+      ? 'Без регистрации метрики тоже собираются — тихо, во время уроков, и остаются на этом устройстве.'
+      : 'Пока идут уроки, Алфабэтика тихо собирает, как ты занимаешься — без оценок и без лишних экранов.'),
+    h('div', { class: 'cabinet-grid' },
+      card('🔥', 'Мотивация', info.motivationLabel, `${info.motivationScore} из 100`),
+      card('⚡', 'Реакция', info.reactionLabel, formatMs(info.reactionMs) || 'Пройди урок с заданиями'),
+      card('⏱️', 'Скорость ответа', info.speedLabel, formatMs(info.answerMs) || 'Появится после первых ответов'),
+      card('📚', 'Пройдено уроков', `${info.lessonsDone} / ${info.lessonsTotal}`, info.sessions ? `занятий записано: ${info.sessions}` : 'Ещё ни одного занятия')));
+}
+
+const LessonTracker = {
+  session: null,
+  start(itemId) {
+    this.abandon();
+    const now = Date.now();
+    this.session = {
+      id: itemId,
+      at: new Date().toISOString(),
+      startedAt: now,
+      markAt: now,
+      reactions: [],
+      answers: [],
+      corrects: 0,
+      mistakes: 0,
+      reacted: false,
+    };
+  },
+  step() {
+    if (!this.session) return;
+    this.session.markAt = Date.now();
+  },
+  notice() {
+    if (!this.session || this.session.reacted) return;
+    this.session.reacted = true;
+    this.session.reactions.push(Math.max(0, Date.now() - this.session.startedAt));
+  },
+  correct() { this._answer(true); },
+  mistake() { this._answer(false); },
+  _answer(ok) {
+    if (!this.session) return;
+    this.notice();
+    const now = Date.now();
+    this.session.answers.push(Math.max(0, now - this.session.markAt));
+    this.session.markAt = now;
+    if (ok) this.session.corrects++;
+    else this.session.mistakes++;
+  },
+  snapshot(completed) {
+    if (!this.session) return null;
+    const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null);
+    return {
+      id: this.session.id,
+      at: this.session.at,
+      completed,
+      durationMs: Date.now() - this.session.startedAt,
+      avgReactionMs: avg(this.session.reactions),
+      avgAnswerMs: avg(this.session.answers),
+      corrects: this.session.corrects,
+      mistakes: this.session.mistakes,
+    };
+  },
+  complete() {
+    const snap = this.snapshot(true);
+    if (snap) Store.recordSession(snap);
+    this.session = null;
+  },
+  abandon() {
+    const snap = this.snapshot(false);
+    this.session = null;
+    if (!snap) return;
+    if (snap.durationMs < 4000 && !snap.corrects && !snap.mistakes) return;
+    Store.recordSession(snap);
+  },
+};
+
 // ---------- Проигрыватель урока ----------
 
 function renderPlayer(kind, id) {
@@ -506,6 +651,7 @@ function renderPlayer(kind, id) {
     : item.kind === 'reading' ? readingSteps(item.ref) : finalSteps(item.ref);
   let step = 0;
   let mistakes = 0;
+  LessonTracker.start(item.id);
 
   const title = item.kind === 'lesson' ? `Урок ${item.ref.id}. ${item.ref.title}` : item.ref.title;
   const progress = h('div', { class: 'progress-bar' }, h('div', { class: 'progress-fill' }));
@@ -541,13 +687,17 @@ function renderPlayer(kind, id) {
     next.disabled = true;
     next.classList.remove('pulse');
     back.style.visibility = step > 0 ? 'visible' : 'hidden';
+    LessonTracker.step();
     const ctx = {
       done: () => { next.disabled = false; next.classList.add('pulse'); },
+      advance: () => { step++; show(); },
       mistake: () => {
         mistakes++;
+        LessonTracker.mistake();
         if (typeof Fox !== 'undefined') Fox.lessonWrong();
       },
       correct: () => {
+        LessonTracker.correct();
         if (typeof Fox !== 'undefined') Fox.lessonRight();
       },
     };
@@ -560,6 +710,7 @@ function renderPlayer(kind, id) {
       Fox.hideWalker();
       Fox.detachLesson({ keepHidden: true });
     }
+    LessonTracker.complete();
     const stars = starsFor(mistakes);
     Store.complete(item.id, stars);
     header();
@@ -593,6 +744,7 @@ function renderPlayer(kind, id) {
     progress, dots, stepJump, stepTitle, stage,
     h('div', { class: 'player-nav' }, back, next));
   if (typeof Fox !== 'undefined') Fox.attachLesson(foxSlot);
+  stage.addEventListener('pointerdown', () => LessonTracker.notice(), { capture: true });
   host().replaceChildren(player);
   show();
 }
@@ -838,8 +990,10 @@ function stopPlayback() {
 function show() {
   stopPlayback();
   const [, kind, id] = location.hash.replace(/^#/, '').split('/');
+  const playing = kind === 'lesson' || kind === 'reading' || kind === 'final';
+  if (!playing) LessonTracker.abandon();
   if (kind === 'auth') renderAuth();
-  else if (kind === 'lesson' || kind === 'reading' || kind === 'final') renderPlayer(kind, id);
+  else if (playing) renderPlayer(kind, id);
   else if (kind === 'cubes') renderCubes();
   else if (kind === 'alphabet') renderAlphabet();
   else if (kind === 'profile') renderProfile();
@@ -860,6 +1014,7 @@ async function init() {
   if (!Auth.user) Store.load(null);
   Mascots.mount();
   if (typeof Fox !== 'undefined') Fox.mount();
+  window.addEventListener('pagehide', () => LessonTracker.abandon());
 }
 
 window.Alfa = { init, show };

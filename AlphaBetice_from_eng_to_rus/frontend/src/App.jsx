@@ -26,6 +26,7 @@ export default function App() {
 
   useEffect(() => {
     if (window.Mascots) Mascots.updateVisibility(kind);
+    if (window.Fox) Fox.updateVisibility(kind);
     if (window.Alfa) Alfa.header();
   }, [kind, snap]);
 

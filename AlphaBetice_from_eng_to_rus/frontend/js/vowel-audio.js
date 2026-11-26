@@ -8,6 +8,16 @@ const ClipAudio = {
     this.current.pause();
     this.current = null;
   },
+  play(src) {
+    if (!src || (typeof Store !== 'undefined' && Store.data && Store.data.sound === false)) {
+      return Promise.resolve();
+    }
+    this.stop();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    const audio = new Audio(src);
+    this.current = audio;
+    return audio.play().catch(() => {});
+  },
   playThrough(src) {
     if (!src || (typeof Store !== 'undefined' && Store.data && Store.data.sound === false)) {
       return Promise.resolve(false);
@@ -39,6 +49,9 @@ const VowelAudio = {
   segments: null,
   _audio: null,
   _timers: [],
+  isPlaying() {
+    return !!(this._audio && !this._audio.paused);
+  },
 
   _el() {
     if (!this._audio) {

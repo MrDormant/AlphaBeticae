@@ -33,7 +33,16 @@ function starsFor(mistakes) {
 }
 
 function header() {
-  if (window.__REACT_HOME__) return;
+  if (window.__REACT_HOME__) {
+    const kind = location.hash.replace(/^#\/?/, '').split('/')[0] || '';
+    if (!kind || (kind !== 'lesson' && kind !== 'reading' && kind !== 'final')) {
+      if (typeof PoemPlayer !== 'undefined') PoemPlayer.stop();
+      if (typeof LessonTracker !== 'undefined') LessonTracker.abandon();
+    }
+    if (!kind) queueMicrotask(enhanceHomeHero);
+    if (typeof Fox !== 'undefined') Fox.updateVisibility(kind);
+    return;
+  }
   const stars = document.getElementById('stars-count');
   if (stars) stars.textContent = Store.stars();
   const sound = document.getElementById('sound-toggle');
@@ -50,9 +59,11 @@ function header() {
         onclick: () => { Auth.logout(); go('#/'); route(); },
       }, L('Выйти', 'Log out')));
   } else {
-    box.replaceChildren(h('a', {
-      class: 'btn ghost small auth-top', href: '#/auth', title: L('Сохранить прогресс на сервере', 'Save progress on the server'),
-    }, L('Войти', 'Sign in')));
+    box.replaceChildren(
+      h('a', { class: 'user-name', href: '#/profile', title: L('Локальный кабинет на этом устройстве', 'Local profile on this device') }, '🏅 ', L('Кабинет', 'Profile')),
+      h('a', {
+        class: 'btn ghost small auth-top', href: '#/auth', title: L('Сохранить прогресс на сервере', 'Save progress on the server'),
+      }, L('Войти / Регистрация', 'Sign in / Register')));
   }
 }
 
@@ -77,8 +88,8 @@ function renderAuth() {
     submit.textContent = m === 'login' ? L('Войти ▶', 'Sign in ▶') : L('Зарегистрироваться ▶', 'Register ▶');
     password.setAttribute('autocomplete', m === 'login' ? 'current-password' : 'new-password');
     hint.textContent = m === 'login'
-      ? L('Необязательно: войди, чтобы звёзды сохранялись в твоём профиле на любом устройстве.', 'Optional: sign in to keep stars in your profile on any device.')
-      : L('Придумай логин (от 3 символов) и пароль (от 4 символов). Звёзды с этого устройства подтянутся в профиль.', 'Choose a login (3+ chars) and password (4+ chars). Stars from this device will merge into your profile.');
+      ? L('Необязательно: войди, чтобы звёзды и кабинет сохранялись на любом устройстве.', 'Optional: sign in to keep stars and your profile on any device.')
+      : L('Придумай логин (от 3 символов) и пароль (от 4 символов). Прогресс с этого устройства попадёт в профиль.', 'Choose a login (3+ chars) and password (4+ chars). Progress from this device will merge into your profile.');
     tabs.replaceChildren(
       h('button', { type: 'button', class: m === 'login' ? 'active' : '', onclick: () => setMode('login') }, L('Вход', 'Sign in')),
       h('button', { type: 'button', class: m === 'register' ? 'active' : '', onclick: () => setMode('register') }, L('Регистрация', 'Register')));
@@ -122,20 +133,82 @@ function renderAuth() {
 // ---------- Главная ----------
 
 function foxVideo() {
-  const video = h('video', {
-    class: 'hero-img',
-    src: 'video/' + encodeURIComponent('лис главная страница.mp4'),
+  return heroLisaCard();
+}
+
+function heroLisaCard() {
+  const lines = [
+    { text: 'Молодец!', audio: 'assets/audio/fox/good.m4a' },
+    { text: 'What is right, what is wrong?', audio: 'assets/audio/fox/idle.m4a' },
+    { text: 'Ох, ошибка!', audio: 'assets/audio/fox/wrong.m4a' },
+  ];
+  const bubble = h('div', { class: 'hero-lisa-bubble', role: 'status' });
+  const vid = h('video', {
+    class: 'hero-img hero-anim',
+    src: 'assets/video/lisa-hero.mp4?v=2',
     autoplay: true,
     muted: true,
     loop: true,
     playsinline: true,
-    preload: 'auto',
+    disablepictureinpicture: true,
   });
-  video.muted = true;
-  video.loop = true;
-  video.playsInline = true;
-  video.play().catch(() => {});
-  return video;
+  vid.muted = true;
+  vid.defaultMuted = true;
+  vid.playsInline = true;
+  vid.autoplay = true;
+  vid.loop = true;
+  vid.setAttribute('muted', '');
+  vid.setAttribute('playsinline', '');
+  vid.play?.().catch(() => {});
+
+  const prompt = IS_EN_RU ? 'Tap 🔊' : 'Нажми 🔊';
+  bubble.textContent = prompt;
+  bubble.classList.add('show', 'hint');
+
+  const wrap = h('div', {
+    class: 'hero-lisa',
+    title: IS_EN_RU ? 'Tap the cloud — Lisa will say a phrase' : 'Нажми на облачко — Лиса скажет фразу',
+  }, bubble, vid);
+
+  let last = -1;
+  const voice = new Audio();
+  voice.preload = 'auto';
+
+  const showPrompt = () => {
+    bubble.textContent = prompt;
+    bubble.classList.add('hint');
+  };
+
+  const speak = () => {
+    if (!wrap.isConnected) return;
+    let i;
+    do { i = Math.floor(Math.random() * lines.length); } while (i === last && lines.length > 1);
+    last = i;
+    const line = lines[i];
+    bubble.textContent = line.text;
+    bubble.classList.remove('hint');
+    voice.onended = showPrompt;
+    voice.onerror = showPrompt;
+    voice.pause();
+    try { voice.currentTime = 0; } catch (e) { /* ignore */ }
+    if (typeof Store === 'undefined' || Store.data.sound) {
+      voice.src = line.audio;
+      voice.play().catch(showPrompt);
+    } else {
+      setTimeout(showPrompt, 2200);
+    }
+  };
+
+  wrap.addEventListener('click', speak);
+  return wrap;
+}
+
+function enhanceHomeHero() {
+  const block = document.querySelector('.hero-block');
+  if (!block || block.querySelector('.hero-lisa')) return;
+  const old = block.querySelector('video.hero-img');
+  if (!old) return;
+  old.replaceWith(heroLisaCard());
 }
 
 function renderHome() {
@@ -195,7 +268,7 @@ function renderHome() {
     h('section', { class: 'games' },
       h('a', { class: 'game-card', href: '#/cubes' }, h('span', { class: 'gc-icon' }, '🎲'), h('b', null, IS_EN_RU ? 'Syllable cubes' : 'Кубики со слогами'), h('span', null, IS_EN_RU ? 'Spin cubes and build words' : 'Крути кубики и собирай слова')),
       h('a', { class: 'game-card', href: '#/alphabet' }, h('span', { class: 'gc-icon' }, '🔤'), h('b', null, IS_EN_RU ? 'Russian alphabet' : 'Русский алфавит'), h('span', null, IS_EN_RU ? 'Letters from the book' : 'Буквы со страниц книги')),
-      h('a', { class: 'game-card', href: '#/profile' }, h('span', { class: 'gc-icon' }, '🏅'), h('b', null, IS_EN_RU ? 'Profile' : 'Личный кабинет'), h('span', null, IS_EN_RU ? 'Stars and progress' : 'Мои звёзды и пройденные уроки'))),
+      h('a', { class: 'game-card', href: '#/profile' }, h('span', { class: 'gc-icon' }, '🏅'), h('b', null, IS_EN_RU ? 'Profile' : 'Личный кабинет'), h('span', null, IS_EN_RU ? 'Stars, lessons, motivation' : 'Звёзды, уроки, мотивация и реакция'))),
     h('section', { class: 'map-section' },
       h('div', { class: 'lesson-list row' }, sections.flatMap((s) => s.items).map(card))),
     h('section', { class: 'settings' },
@@ -271,13 +344,16 @@ function renderProfile() {
           Auth.user && Auth.user.created_at ? L(`В Алфабэтике с ${formatDate(Auth.user.created_at)}`, `On Alfabetica since ${formatDate(Auth.user.created_at)}`) : L('Занимаешься без регистрации', 'Studying without sign-in'),
           lastDate ? L(` · последний урок ${formatDate(lastDate)}`, ` · last lesson ${formatDate(lastDate)}`) : ''))),
     !Auth.user ? h('div', { class: 'guest-note' },
-      L('Прогресс на этом устройстве. Чтобы не потерять звёзды, создай профиль.', 'Progress is on this device only. Create a profile to keep your stars.'),
-      h('a', { class: 'btn primary small', href: '#/auth' }, L('Войти / регистрация', 'Sign in / register'))) : null,
+      L(
+        'Это локальный кабинет: звёзды и метрики уже пишутся на этом компьютере. Регистрация нужна, чтобы открыть их с другого устройства.',
+        'This is a local profile: stars and metrics are already saved on this computer. Register to open them on another device.'),
+      h('a', { class: 'btn primary small', href: '#/auth' }, L('Регистрация', 'Register'))) : null,
     h('div', { class: 'stats' },
       stat('⭐', `${stars} / ${maxStars}`, L('звёзд собрано', 'stars collected')),
       stat('📚', `${passed.length} / ${COURSE.length}`, L('уроков пройдено', 'lessons completed')),
       stat('🔤', learned.length, L('букв в команде', 'letters in team')),
       stat('🎲', Store.data.cubeScore || 0, L('ответов в кубиках', 'cube answers'))),
+    cabinetBlock(summarizeLearning(Store.data)),
     h('div', { class: 'total-progress' },
       h('div', { class: 'tp-label' }, L(`Пройдено ${percent}% Алфабэтики`, `${percent}% of Starter completed`)),
       h('div', { class: 'progress-bar big' }, h('div', { class: 'progress-fill', style: { width: percent + '%' } }))),
@@ -306,12 +382,22 @@ function bookRemember(lesson, ctx) {
     Ex.remember(lesson.remember, ctx, 'Remember. Match the pairs printed in the book.'));
 }
 
+const POEM_STEP_TITLE = 'Стихотворение Лисы Лисичкиной';
+
+function poemStep(poem, opts) {
+  if (!poem || typeof Ex.poem !== 'function') return null;
+  return { title: POEM_STEP_TITLE, closing: !!(opts && opts.closing), render: (ctx) => Ex.poem(poem, ctx, opts) };
+}
+
 function insertPoem(lesson, steps) {
-  const poem = window.POEMS && window.POEMS[lesson.id];
-  if (!poem || typeof Ex.poem !== 'function') return steps;
-  const step = { title: poem.title || 'Poem', render: (ctx) => Ex.poem(poem, ctx) };
-  steps.push(step);
-  return steps;
+  const out = [];
+  const hello = poemStep(window.POEMS && window.POEMS[1]);
+  if (hello) out.push(hello);
+  out.push(...steps);
+  const closingPoem = window.POEMS && (window.POEMS[lesson.id] || window.POEMS[1]);
+  const closing = poemStep(closingPoem, { closing: true });
+  if (closing) out.push(closing);
+  return out;
 }
 
 function lessonSteps(lesson) {
@@ -345,6 +431,166 @@ function lessonSteps(lesson) {
   if (lesson.pronouns) steps.push({ title: '11. Он и она', render: (ctx) => Ex.pronounPicture(ctx) });
   return insertPoem(lesson, steps);
 }
+
+function avgNums(values) {
+  const nums = values.filter((v) => typeof v === 'number' && v >= 0);
+  if (!nums.length) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function motivationLabel(score) {
+  if (score >= 80) return L('Горит желанием учиться', 'Eager to learn');
+  if (score >= 55) return L('Занимается с интересом', 'Learning with interest');
+  if (score >= 30) return L('Потихоньку входит во вкус', 'Warming up');
+  return L('Нужна поддержка и похвала', 'Needs praise and support');
+}
+
+function reactionLabel(ms) {
+  if (ms == null) return L('Пока мало данных', 'Not enough data yet');
+  if (ms < 1200) return L('Молниеносная', 'Lightning-fast');
+  if (ms < 3000) return L('Живая', 'Lively');
+  if (ms < 6000) return L('Спокойная', 'Calm');
+  return L('Вдумчивая', 'Thoughtful');
+}
+
+function speedLabel(ms) {
+  if (ms == null) return L('Пока мало данных', 'Not enough data yet');
+  if (ms < 2500) return L('Отвечает очень быстро', 'Answers very quickly');
+  if (ms < 6000) return L('В своём уверенном темпе', 'Steady, confident pace');
+  return L('Не спешит, думает', 'Takes time to think');
+}
+
+function formatMs(ms) {
+  if (ms == null) return '';
+  const sec = ms / 1000;
+  return sec < 10 ? `${sec.toFixed(1)} s` : `${Math.round(sec)} s`;
+}
+
+function summarizeLearning(data) {
+  const total = COURSE.length;
+  const done = (data && data.done) || {};
+  const lessonsDone = Object.values(done).filter(Boolean).length;
+  const sessions = ((data && data.metrics && data.metrics.sessions) || []);
+  const finished = sessions.filter((s) => s.completed);
+  const abandoned = sessions.filter((s) => !s.completed);
+  const reactions = sessions.map((s) => s.avgReactionMs).filter(Boolean);
+  const answers = sessions.map((s) => s.avgAnswerMs).filter(Boolean);
+  const corrects = sessions.reduce((a, s) => a + (s.corrects || 0), 0);
+  const mistakes = sessions.reduce((a, s) => a + (s.mistakes || 0), 0);
+  const attempts = corrects + mistakes;
+  const accuracy = attempts ? corrects / attempts : null;
+
+  let score = 35;
+  if (total) score += 30 * (lessonsDone / total);
+  if (accuracy != null) score += 20 * accuracy;
+  if (finished.length) score += 10;
+  if (abandoned.length && abandoned.length > finished.length) score -= 12;
+  const avgDur = avgNums(finished.map((s) => s.durationMs || 0));
+  if (finished.length && avgDur && avgDur > 90000) score += 8;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const reactionMs = avgNums(reactions);
+  const answerMs = avgNums(answers);
+  return {
+    lessonsDone,
+    lessonsTotal: total,
+    motivationScore: score,
+    motivationLabel: motivationLabel(score),
+    reactionMs: reactionMs == null ? null : Math.round(reactionMs),
+    reactionLabel: reactionLabel(reactionMs),
+    answerMs: answerMs == null ? null : Math.round(answerMs),
+    speedLabel: speedLabel(answerMs),
+    sessions: sessions.length,
+  };
+}
+
+function cabinetBlock(info) {
+  const local = !Auth.user;
+  const card = (icon, title, value, hint) => h('div', { class: 'cabinet-card' },
+    h('div', { class: 'cabinet-k' }, icon, ' ', title),
+    h('div', { class: 'cabinet-v' }, value),
+    hint ? h('div', { class: 'cabinet-h' }, hint) : null);
+
+  return h('div', { class: 'cabinet' },
+    h('h2', { class: 'step-title' }, L('Как ты учишься', 'How you learn')),
+    h('p', { class: 'cabinet-lead' }, local
+      ? L(
+        'Без регистрации метрики тоже собираются — тихо, во время уроков, и остаются на этом устройстве.',
+        'Metrics are collected without an account too — quietly during lessons, and they stay on this device.')
+      : L(
+        'Пока идут уроки, Алфабэтика тихо собирает, как ты занимаешься — без оценок и без лишних экранов.',
+        'While you work, Alfabetica quietly notes how you learn — no grades, no extra screens.')),
+    h('div', { class: 'cabinet-grid' },
+      card('🔥', L('Мотивация', 'Motivation'), info.motivationLabel, L(`${info.motivationScore} из 100`, `${info.motivationScore} / 100`)),
+      card('⚡', L('Реакция', 'Reaction'), info.reactionLabel, formatMs(info.reactionMs) || L('Пройди урок с заданиями', 'Finish a lesson with tasks')),
+      card('⏱️', L('Скорость ответа', 'Answer speed'), info.speedLabel, formatMs(info.answerMs) || L('Появится после первых ответов', 'Appears after the first answers')),
+      card('📚', L('Пройдено уроков', 'Lessons completed'), `${info.lessonsDone} / ${info.lessonsTotal}`, info.sessions ? L(`занятий записано: ${info.sessions}`, `sessions logged: ${info.sessions}`) : L('Ещё ни одного занятия', 'No sessions yet'))));
+}
+
+const LessonTracker = {
+  session: null,
+  start(itemId) {
+    this.abandon();
+    const now = Date.now();
+    this.session = {
+      id: itemId,
+      at: new Date().toISOString(),
+      startedAt: now,
+      markAt: now,
+      reactions: [],
+      answers: [],
+      corrects: 0,
+      mistakes: 0,
+      reacted: false,
+    };
+  },
+  step() {
+    if (!this.session) return;
+    this.session.markAt = Date.now();
+  },
+  notice() {
+    if (!this.session || this.session.reacted) return;
+    this.session.reacted = true;
+    this.session.reactions.push(Math.max(0, Date.now() - this.session.startedAt));
+  },
+  correct() { this._answer(true); },
+  mistake() { this._answer(false); },
+  _answer(ok) {
+    if (!this.session) return;
+    this.notice();
+    const now = Date.now();
+    this.session.answers.push(Math.max(0, now - this.session.markAt));
+    this.session.markAt = now;
+    if (ok) this.session.corrects++;
+    else this.session.mistakes++;
+  },
+  snapshot(completed) {
+    if (!this.session) return null;
+    const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null);
+    return {
+      id: this.session.id,
+      at: this.session.at,
+      completed,
+      durationMs: Date.now() - this.session.startedAt,
+      avgReactionMs: avg(this.session.reactions),
+      avgAnswerMs: avg(this.session.answers),
+      corrects: this.session.corrects,
+      mistakes: this.session.mistakes,
+    };
+  },
+  complete() {
+    const snap = this.snapshot(true);
+    if (snap) Store.recordSession(snap);
+    this.session = null;
+  },
+  abandon() {
+    const snap = this.snapshot(false);
+    this.session = null;
+    if (!snap) return;
+    if (snap.durationMs < 4000 && !snap.corrects && !snap.mistakes) return;
+    Store.recordSession(snap);
+  },
+};
 
 function readingSteps(reading) {
   return [
@@ -383,6 +629,7 @@ function finalSteps(fin) {
 // ---------- Проигрыватель урока ----------
 
 function renderPlayer(kind, id) {
+  if (typeof Fox !== 'undefined') Fox.detachLesson();
   const index = COURSE.findIndex((c) => c.id === id);
   const item = COURSE[index];
   if (!item) return go('#/');
@@ -392,6 +639,7 @@ function renderPlayer(kind, id) {
     : item.kind === 'reading' ? readingSteps(item.ref) : finalSteps(item.ref);
   let step = 0;
   let mistakes = 0;
+  LessonTracker.start(item.id);
 
   const title = item.kind === 'lesson' ? L(`Урок ${item.ref.id}. ${item.ref.title}`, `Lesson ${item.ref.id}. ${item.ref.title}`) : item.ref.title;
   const progress = h('div', { class: 'progress-bar' }, h('div', { class: 'progress-fill' }));
@@ -422,19 +670,34 @@ function renderPlayer(kind, id) {
     progress.firstChild.style.width = `${((step + 1) / steps.length) * 100}%`;
     dots.textContent = L(`Шаг ${step + 1} из ${steps.length}`, `Step ${step + 1} of ${steps.length}`);
     stepTitle.textContent = s.title;
-    next.disabled = false;
-    next.classList.toggle('pulse', cleared.has(step));
+    LessonTracker.step();
+    next.disabled = !!s.closing;
+    next.classList.toggle('pulse', cleared.has(step) && !s.closing);
     back.style.visibility = step > 0 ? 'visible' : 'hidden';
     paintSwitcher();
     const ctx = {
-      done: () => { cleared.add(step); next.classList.add('pulse'); paintSwitcher(); },
-      mistake: () => { mistakes++; },
+      done: () => { cleared.add(step); next.disabled = false; next.classList.add('pulse'); paintSwitcher(); },
+      advance: () => { step++; show(); },
+      mistake: () => {
+        mistakes++;
+        LessonTracker.mistake();
+        if (typeof Fox !== 'undefined') Fox.lessonWrong();
+      },
+      correct: () => {
+        LessonTracker.correct();
+        if (typeof Fox !== 'undefined') Fox.lessonRight();
+      },
     };
     stage.replaceChildren(s.render(ctx));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const finish = () => {
+    if (typeof Fox !== 'undefined') {
+      Fox.hideWalker();
+      Fox.detachLesson({ keepHidden: true });
+    }
+    LessonTracker.complete();
     const stars = starsFor(mistakes);
     Store.complete(item.id, stars);
     header();
@@ -442,7 +705,11 @@ function renderPlayer(kind, id) {
     confetti();
     const after = COURSE[index + 1];
     const newLetters = item.kind === 'lesson' ? lessonLetters(item.ref) : [];
+    const foxCheer = typeof Fox !== 'undefined'
+      ? Fox.finishPanel({ stars, perfect: mistakes === 0, final: item.kind === 'final' })
+      : null;
     view().replaceChildren(h('div', { class: 'finish' },
+      foxCheer,
       h('h1', null, item.kind === 'final' ? L('Ура! Ты прошёл всю Алфабэтику!', 'Hooray! You finished Starter!') : L('Урок пройден!', 'Lesson complete!')),
       h('div', { class: 'finish-stars' }, [1, 2, 3].map((n) => h('span', { class: n <= stars ? 'on' : '' }, '★'))),
       h('p', null, mistakes === 0 ? L('Ни одной ошибки! Великолепно!', 'No mistakes! Awesome!') : L(
@@ -457,12 +724,16 @@ function renderPlayer(kind, id) {
         after ? h('a', { class: 'btn primary', href: `#/${after.kind}/${after.id}` }, L('Следующий урок ▶', 'Next lesson ▶')) : null)));
   };
 
+  const foxSlot = h('div', { class: 'fox-podium-slot' });
   view().replaceChildren(h('div', { class: 'player' },
     h('div', { class: 'player-head' },
       h('a', { class: 'close', href: '#/', title: L('К урокам', 'To lessons') }, '✕'),
       h('div', { class: 'player-title' }, title)),
+    h('div', { class: 'fox-podium' }, foxSlot),
     progress, dots, switcher, stepTitle, stage,
     h('div', { class: 'player-nav' }, back, next)));
+  if (typeof Fox !== 'undefined') Fox.attachLesson(foxSlot);
+  stage.addEventListener('pointerdown', () => LessonTracker.notice(), { capture: true });
   show();
 }
 
@@ -728,11 +999,15 @@ function route() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (typeof ClipAudio !== 'undefined') ClipAudio.stop();
   if (typeof VowelAudio !== 'undefined') VowelAudio.stop();
+  if (typeof PoemPlayer !== 'undefined') PoemPlayer.stop();
   const [, kind, id] = location.hash.replace(/^#/, '').split('/');
+  const playing = kind === 'lesson' || kind === 'reading' || kind === 'final';
+  if (!playing) LessonTracker.abandon();
   if (!kind && window.__REACT_HOME__) {
     if (view()) view().replaceChildren();
     header();
     Mascots.updateVisibility('');
+    if (typeof Fox !== 'undefined') Fox.updateVisibility('');
     return;
   }
   if (kind === 'auth') renderAuth();
@@ -743,6 +1018,7 @@ function route() {
   else renderHome();
   header();
   Mascots.updateVisibility(kind);
+  if (typeof Fox !== 'undefined') Fox.updateVisibility(kind);
 }
 
 window.Alfa = {
@@ -782,6 +1058,8 @@ window.Alfa.booted = (async () => {
     route();
   });
   Mascots.mount();
+  if (typeof Fox !== 'undefined') Fox.mount();
+  window.addEventListener('pagehide', () => LessonTracker.abandon());
   if (!window.__REACT_HOME__) {
     try {
       route();

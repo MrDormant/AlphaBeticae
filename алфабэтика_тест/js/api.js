@@ -12,7 +12,7 @@ const Api = {
     try {
       res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
     } catch (e) {
-      const err = new Error('Сервер недоступен. Проверьте, что приложение запущено через Docker.');
+      const err = new Error('Сервер недоступен. Запустите бэкенд Алфабэтики.');
       err.offline = true;
       throw err;
     }
@@ -64,16 +64,27 @@ const Auth = {
   },
 
   async submit(mode, login, password) {
-    const guestSnapshot = this.user ? null : { ...Store.data, done: { ...Store.data.done }, dates: { ...Store.data.dates } };
+    const guestSnapshot = this.user ? null : {
+      ...Store.data,
+      done: { ...Store.data.done },
+      dates: { ...Store.data.dates },
+      metrics: Store.data.metrics ? JSON.parse(JSON.stringify(Store.data.metrics)) : { sessions: [] },
+    };
     const { token, user } = await Api.request('POST', mode === 'register' ? '/api/register' : '/api/login', { login, password });
     Api.token = token;
     await this.start(user);
-    if (guestSnapshot && Object.keys(guestSnapshot.done || {}).length) {
-      for (const [id, stars] of Object.entries(guestSnapshot.done)) {
+    const hadGuest = guestSnapshot && (
+      Object.keys(guestSnapshot.done || {}).length
+      || guestSnapshot.cubeScore
+      || ((guestSnapshot.metrics && guestSnapshot.metrics.sessions) || []).length
+    );
+    if (hadGuest) {
+      for (const [id, stars] of Object.entries(guestSnapshot.done || {})) {
         Store.data.done[id] = Math.max(Store.data.done[id] || 0, stars);
       }
       Store.data.dates = { ...guestSnapshot.dates, ...Store.data.dates };
       Store.data.cubeScore = Math.max(Store.data.cubeScore || 0, guestSnapshot.cubeScore || 0);
+      Store.mergeMetrics(guestSnapshot.metrics);
       Store.save();
     }
   },

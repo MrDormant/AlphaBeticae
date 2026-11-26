@@ -10,8 +10,8 @@ const PoemPlayer = {
   },
 };
 
-Ex.poem = (poem, ctx) => {
-  ctx.done();
+Ex.poem = (poem, ctx, opts = {}) => {
+  if (!opts.closing) ctx.done();
   PoemPlayer.stop();
 
   const words = poem.words || [];
@@ -27,6 +27,11 @@ Ex.poem = (poem, ctx) => {
   });
   if (line.childNodes.length) lines.push(line);
 
+  const heading = h(
+    'div',
+    { class: 'poem-heading' },
+    'Стихотворение Лисы Лисичкиной. Слушай и повторяй',
+  );
   const caption = h('div', { class: 'poem-caption' }, lines);
   const video = h('video', {
     class: 'poem-video',
@@ -72,10 +77,15 @@ Ex.poem = (poem, ctx) => {
     playBtn.textContent = '▶ Again';
     playBtn.classList.remove('hide');
     audio.currentTime = 0;
+    if (!opts.closing) return;
+    ctx.done();
+    setTimeout(() => {
+      if (PoemPlayer.audio === audio && typeof ctx.advance === 'function') ctx.advance();
+    }, 700);
   });
   audio.addEventListener('play', () => playBtn.classList.add('hide'));
 
-  const screen = h('div', { class: 'poem-screen' }, video, caption, playBtn);
+  const screen = h('div', { class: 'poem-screen' }, video, heading, caption, playBtn);
   requestAnimationFrame(start);
   return screen;
 };

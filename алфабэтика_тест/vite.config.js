@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cpSync, createReadStream, existsSync, statSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -67,6 +68,16 @@ function serveDir(dir) {
   };
 }
 
+function copyTree(from, to) {
+  const result = spawnSync('robocopy', [from, to, '/E', '/NFL', '/NDL', '/NJH', '/NJS', '/nc', '/ns', '/np'], {
+    windowsHide: true,
+    encoding: 'utf8',
+  });
+  if (result.status != null && result.status >= 8) {
+    throw new Error(`Не удалось скопировать ${from} → ${to} (код ${result.status})`);
+  }
+}
+
 function copyRuntime() {
   return {
     name: 'alfabetica-runtime',
@@ -77,9 +88,15 @@ function copyRuntime() {
     },
     closeBundle() {
       const out = join(root, 'dist');
-      cpSync(join(root, 'js'), join(out, 'js'), { recursive: true });
-      cpSync(join(root, 'assets'), join(out, 'assets'), { recursive: true });
-      cpSync(join(root, 'css'), join(out, 'css'), { recursive: true });
+      copyTree(join(root, 'js'), join(out, 'js'));
+      copyTree(join(root, 'assets'), join(out, 'assets'));
+      copyTree(join(root, 'css'), join(out, 'css'));
+      const htmlPath = join(out, 'index.html');
+      let html = readFileSync(htmlPath, 'utf8');
+      if (!html.includes('css/styles.css')) {
+        html = html.replace('</head>', '  <link rel="stylesheet" href="./css/styles.css">\n</head>');
+        writeFileSync(htmlPath, html);
+      }
     },
   };
 }
@@ -88,6 +105,11 @@ export default defineConfig({
   base: './',
   publicDir: false,
   plugins: [react(), copyRuntime()],
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8002',
+    },
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,

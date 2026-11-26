@@ -168,13 +168,16 @@ const Store = {
   user: null,
   data: null,
   syncTimer: null,
-  defaults: () => ({ done: {}, dates: {}, name: '', unlockAll: false, sound: true, cubeScore: 0 }),
+  defaults: () => ({ done: {}, dates: {}, name: '', unlockAll: false, sound: true, cubeScore: 0, metrics: { sessions: [] } }),
   load(user = null) {
     this.user = user;
     this.key = user ? `alfabetica-user-${user}` : 'alfabetica-progress-v1';
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem(this.key)) || {}; } catch (e) { saved = {}; }
     this.data = { ...this.defaults(), ...saved };
+    if (!this.data.metrics || !Array.isArray(this.data.metrics.sessions)) {
+      this.data.metrics = { sessions: [] };
+    }
   },
   // Сервер — главный источник, но звёзды, заработанные без связи, не теряются.
   applyServer(serverData) {
@@ -191,9 +194,32 @@ const Store = {
     }
     const cubeScore = Math.max(server.cubeScore || 0, local.cubeScore || 0);
     if (cubeScore > (server.cubeScore || 0)) localAhead = true;
-    this.data = { ...server, done, dates, cubeScore };
+    const metrics = this._mergedMetrics(server.metrics, local.metrics);
+    if ((metrics.sessions || []).length > ((server.metrics && server.metrics.sessions) || []).length) localAhead = true;
+    this.data = { ...server, done, dates, cubeScore, metrics };
     localStorage.setItem(this.key, JSON.stringify(this.data));
     if (localAhead) this.sync();
+  },
+  _mergedMetrics(serverMetrics, localMetrics) {
+    const seen = new Set();
+    const sessions = [];
+    for (const session of [...((serverMetrics && serverMetrics.sessions) || []), ...((localMetrics && localMetrics.sessions) || [])]) {
+      const key = `${session.id}|${session.at}|${session.completed ? 1 : 0}|${session.durationMs || 0}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      sessions.push(session);
+    }
+    sessions.sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')));
+    return { sessions: sessions.slice(-50) };
+  },
+  mergeMetrics(incoming) {
+    this.data.metrics = this._mergedMetrics(this.data.metrics, incoming);
+  },
+  recordSession(session) {
+    const metrics = this.data.metrics || { sessions: [] };
+    metrics.sessions = [...(metrics.sessions || []), session].slice(-50);
+    this.data.metrics = metrics;
+    this.save();
   },
   save() {
     localStorage.setItem(this.key, JSON.stringify(this.data));

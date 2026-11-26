@@ -43,7 +43,10 @@ export default function Header() {
               <button className="btn ghost small" type="button" onClick={logout}>Log out</button>
             </>
           ) : (
-            <a className="btn ghost small auth-top" href="#/auth" title="Save progress on the server">Sign in</a>
+            <>
+              <a className="user-name" href="#/profile" title="Local profile on this device">🏅 Profile</a>
+              <a className="btn ghost small auth-top" href="#/auth" title="Save progress and profile">Sign in / Register</a>
+            </>
           )}
         </div>
         <span className="stars-total" title="My stars">★ <span id="stars-count">{Store.stars()}</span></span>

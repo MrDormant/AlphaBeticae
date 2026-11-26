@@ -99,7 +99,10 @@ function Header() {
               <button className="btn ghost small" type="button" onClick={logout}>Выйти</button>
             </>
           ) : (
-            <a className="btn ghost small auth-top" href="#/auth" title="Сохранить прогресс на сервере">Войти</a>
+            <>
+              <a className="user-name" href="#/profile" title="Локальный кабинет на этом устройстве">🏅 Кабинет</a>
+              <a className="btn ghost small auth-top" href="#/auth" title="Сохранить прогресс и кабинет">Войти / Регистрация</a>
+            </>
           )}
         </div>
         <Stars count={stars} />

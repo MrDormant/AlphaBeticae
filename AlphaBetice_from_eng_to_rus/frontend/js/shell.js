@@ -12048,7 +12048,10 @@ function y1() {
           p.login
         ] }),
         /* @__PURE__ */ z.jsx("button", { className: "btn ghost small", type: "button", onClick: fl, children: "Log out" })
-      ] }) : /* @__PURE__ */ z.jsx("a", { className: "btn ghost small auth-top", href: "#/auth", title: "Save progress on the server", children: "Sign in" }) }),
+      ] }) : /* @__PURE__ */ z.jsxs("span", { className: "user-box-guest", children: [
+        /* @__PURE__ */ z.jsx("a", { className: "user-name", href: "#/profile", title: "Local profile on this device", children: "🏅 Profile" }),
+        /* @__PURE__ */ z.jsx("a", { className: "btn ghost small auth-top", href: "#/auth", title: "Save progress and profile", children: "Sign in / Register" })
+      ] }) }),
       /* @__PURE__ */ z.jsxs("span", { className: "stars-total", title: "My stars", children: [
         "★ ",
         /* @__PURE__ */ z.jsx("span", { id: "stars-count", children: Store.stars() })
@@ -12146,7 +12149,7 @@ function g1() {
       /* @__PURE__ */ z.jsxs("a", { className: "game-card", href: "#/profile", children: [
         /* @__PURE__ */ z.jsx("span", { className: "gc-icon", children: "🏅" }),
         /* @__PURE__ */ z.jsx("b", { children: "Profile" }),
-        /* @__PURE__ */ z.jsx("span", { children: "Stars and progress" })
+        /* @__PURE__ */ z.jsx("span", { children: "Stars, lessons, motivation" })
       ] })
     ] }),
     /* @__PURE__ */ z.jsx("section", { className: "map-section", children: /* @__PURE__ */ z.jsx("div", { className: "lesson-list row", children: r.map((W, dl) => {
