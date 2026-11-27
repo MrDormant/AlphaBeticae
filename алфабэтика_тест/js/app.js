@@ -679,6 +679,7 @@ function renderPlayer(kind, id) {
     if (typeof VowelAudio !== 'undefined') VowelAudio.stop();
     if (typeof ClipAudio !== 'undefined') ClipAudio.stop();
     if (typeof PoemPlayer !== 'undefined') PoemPlayer.stop();
+    if (typeof Fox !== 'undefined' && Fox.stopVoice) Fox.stopVoice();
     const s = steps[step];
     progress.firstChild.style.width = `${(step / steps.length) * 100}%`;
     dots.textContent = `Шаг ${step + 1} из ${steps.length}: ${s.title}`;

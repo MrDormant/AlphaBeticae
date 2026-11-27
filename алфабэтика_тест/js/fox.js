@@ -666,7 +666,6 @@ const Fox = {
         if (this._lessonKind === 'start') this._playLessonClip('idle');
       }, 8000);
       this._idleSaid = true;
-      if (this.CLIPS.idle.audio) this._sayClip(this.CLIPS.idle.audio);
       return;
     }
     clearTimeout(this._startT);

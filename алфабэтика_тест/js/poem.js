@@ -13,6 +13,9 @@ const PoemPlayer = {
 Ex.poem = (poem, ctx, opts = {}) => {
   if (!opts.closing) ctx.done();
   PoemPlayer.stop();
+  if (typeof Fox !== 'undefined' && Fox.stopVoice) Fox.stopVoice();
+  if (typeof ClipAudio !== 'undefined') ClipAudio.stop();
+  if (typeof VowelAudio !== 'undefined') VowelAudio.stop();
 
   const words = poem.words || [];
   const nodes = words.map((word) => h('span', { class: 'poem-word' }, word.w));
@@ -44,8 +47,15 @@ Ex.poem = (poem, ctx, opts = {}) => {
   video.muted = true;
 
   const playBtn = h('button', { class: 'poem-play', type: 'button' }, '▶ Слушать стих');
-  const audio = new Audio(poem.audio);
+  const raw = poem.audio || '';
+  const slash = raw.lastIndexOf('/');
+  const src = slash >= 0 ? raw.slice(0, slash + 1) + encodeURIComponent(raw.slice(slash + 1)) : raw;
+  const audio = new Audio();
+  audio.preload = 'auto';
   PoemPlayer.audio = audio;
+  let heardMs = 0;
+  let playingSince = 0;
+  let finished = false;
 
   const paint = () => {
     const t = audio.currentTime || 0;
@@ -57,9 +67,15 @@ Ex.poem = (poem, ctx, opts = {}) => {
   };
 
   const start = () => {
+    if (PoemPlayer.audio !== audio) return;
     playBtn.classList.add('hide');
     video.play().catch(() => {});
-    audio.play().catch(() => playBtn.classList.remove('hide'));
+    const go = () => {
+      if (PoemPlayer.audio !== audio) return;
+      audio.play().catch(() => playBtn.classList.remove('hide'));
+    };
+    if (audio.readyState >= 2) go();
+    else audio.addEventListener('canplay', go, { once: true });
   };
 
   playBtn.onclick = () => {
@@ -71,21 +87,41 @@ Ex.poem = (poem, ctx, opts = {}) => {
     }
   };
 
+  audio.addEventListener('playing', () => {
+    playingSince = Date.now();
+    playBtn.classList.add('hide');
+  });
+  audio.addEventListener('pause', () => {
+    if (playingSince) heardMs += Date.now() - playingSince;
+    playingSince = 0;
+  });
   audio.addEventListener('timeupdate', paint);
+  audio.addEventListener('error', () => {
+    playBtn.textContent = '▶ Слушать стих';
+    playBtn.classList.remove('hide');
+  });
   audio.addEventListener('ended', () => {
+    if (playingSince) heardMs += Date.now() - playingSince;
+    playingSince = 0;
+    const pos = audio.currentTime || 0;
+    const dur = Number.isFinite(audio.duration) ? audio.duration : 0;
     nodes.forEach((node) => node.classList.add('sung'));
     playBtn.textContent = '▶ Ещё раз';
     playBtn.classList.remove('hide');
-    audio.currentTime = 0;
-    if (!opts.closing) return;
+    try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+    if (!opts.closing || finished) return;
+    if (heardMs < 800 && pos < 0.5 && dur < 1) return;
+    finished = true;
     ctx.done();
     setTimeout(() => {
       if (PoemPlayer.audio === audio && typeof ctx.advance === 'function') ctx.advance();
     }, 700);
   });
   audio.addEventListener('play', () => playBtn.classList.add('hide'));
+  audio.src = src;
+  audio.load();
 
   const screen = h('div', { class: 'poem-screen' }, video, heading, caption, playBtn);
-  requestAnimationFrame(start);
+  start();
   return screen;
 };
